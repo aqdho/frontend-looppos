@@ -10,24 +10,37 @@ export default function AuthGuard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Belum login → hanya boleh masuk login/register
-    if (!token) {
-      if (pathname !== "/login" && pathname !== "/register") {
-        router.replace("/login");
-        return;
-      }
+    console.log("AUTH GUARD:", pathname, "TOKEN:", token);
+
+    if (pathname === "/" || pathname === "/KasirApp") {
+      setChecking(false);
+      return;
     }
 
-    setLoading(false);
+    if (pathname === "/login" || pathname === "/register") {
+      setChecking(false);
+      return;
+    }
+
+    if (!token) {
+      router.replace("/KasirApp");
+      return;
+    }
+
+    setChecking(false);
   }, [pathname, router]);
 
-  if (loading) {
-    return null;
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white-900">
+        <p className="text-black">Memuat...</p>
+      </div>
+    );
   }
 
   return <>{children}</>;

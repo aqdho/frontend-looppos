@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgDarkMatte" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+
+    <linearGradient id="luminousEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <linearGradient id="platinumWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+
+    <linearGradient id="pureGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <rect
+    x="24"
+    y="24"
+    width="464"
+    height="464"
+    rx="112"
+    fill="url(#bgDarkMatte)"
+    stroke="#1e293b"
+    stroke-width="2"
+  />
+
+  <g id="interlocking-rings">
+    <circle
+      cx="216"
+      cy="256"
+      r="76"
+      fill="none"
+      stroke="url(#luminousEmerald)"
+      stroke-width="28"
+    />
+
+    <circle
+      cx="296"
+      cy="256"
+      r="76"
+      fill="none"
+      stroke="url(#platinumWhite)"
+      stroke-width="28"
+    />
+
+    <path
+      d="M 256,192 A 76 76 0 0 1 292,256 A 76 76 0 0 0 256,192 Z"
+      fill="url(#platinumWhite)"
+    />
+
+    <circle
+      cx="256"
+      cy="256"
+      r="14"
+      fill="#0f172a"
+      stroke="url(#luminousEmerald)"
+      stroke-width="3"
+    />
+
+    <circle
+      cx="256"
+      cy="256"
+      r="6"
+      fill="url(#pureGold)"
+    />
+  </g>
+</svg>

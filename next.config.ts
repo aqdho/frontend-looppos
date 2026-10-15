@@ -1,7 +1,17 @@
-import type { NextConfig } from "next";
+const nextConfig = {
+  allowedDevOrigins: [
+    "localhost",
+    "diligent-handstand-unframed.ngrok-free.dev",
+  ],
 
-const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:3000/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

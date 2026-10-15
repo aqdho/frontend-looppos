@@ -1,8 +1,13 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(1.5rem);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -14,6 +19,7 @@
   100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -23,29 +29,77 @@
   animation: fadeInUp 0.35s ease-out;
 }
 
-@import "tailwindcss";
+/* ========================================= */
+/* LIGHT THEME */
+/* ========================================= */
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a1b1e;
+
+  --surface: #ffffff;
+  --surface-secondary: #f8f9fa;
+  --border: #dee2e6;
+  --muted: #868e96;
 }
+
+/* ========================================= */
+/* DARK THEME */
+/* ========================================= */
+
+.dark {
+  --background: #1a1b1e;
+  --foreground: #c1c2c5;
+
+  --surface: #25262b;
+  --surface-secondary: #2c2e33;
+  --border: #373a40;
+  --muted: #909296;
+}
+
+/* ========================================= */
+/* TAILWIND THEME VARIABLES */
+/* ========================================= */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ========================================= */
+/* BODY */
+/* ========================================= */
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
+  margin: 0;
+
   background: var(--background);
   color: var(--foreground);
+
   font-family: Arial, Helvetica, sans-serif;
+
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+/* ========================================= */
+/* SCROLLBAR */
+/* ========================================= */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ced4da transparent;
+}
+
+.dark * {
+  scrollbar-color: #495057 transparent;
 }
