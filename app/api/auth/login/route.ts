@@ -13,11 +13,27 @@ export async function POST(request: Request) {
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
 
-    return Response.json(data, { status: response.status });
+    console.log("Login backend status:", response.status);
+
+    try {
+      return Response.json(JSON.parse(text), {
+        status: response.status,
+      });
+    } catch {
+      console.error("Login backend returned non-JSON response");
+
+      return Response.json(
+        { pesan: "Respons backend tidak valid" },
+        { status: 502 }
+      );
+    }
   } catch (error) {
-    console.error("Login API error:", error);
+    console.error(
+      "Login proxy error:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
 
     return Response.json(
       { pesan: "Tidak dapat terhubung ke server" },
