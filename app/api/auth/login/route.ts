@@ -3,7 +3,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const response = await fetch(
-      "https://belajar-express-production-52cf.up.railway.app/auth/login",
+      "https://belajar-express-production-7cfb.up.railway.app/auth/login",
       {
         method: "POST",
         headers: {
