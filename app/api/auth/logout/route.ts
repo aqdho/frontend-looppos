@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
     try {
         const authorization = request.headers.get("authorization");
 
-        const response = await fetch("http://localhost:3000/auth/logout", {
+        const response = await fetch("https://belajar-express-production-7cfb.up.railway.app/auth/logout", {
             method: "POST",
             headers: {
                 Authorization: authorization ?? "",

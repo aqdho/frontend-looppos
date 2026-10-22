@@ -11,7 +11,7 @@ const nextConfig = {
     {
       source: "/api/:path*",
       destination:
-        "https://belajar-express-production-52cf.up.railway.app/api/:path*",
+        "https://belajar-express-production-7cfb.up.railway.app/:path*",
     },
   ];
 },
