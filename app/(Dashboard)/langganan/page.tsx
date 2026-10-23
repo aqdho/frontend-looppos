@@ -219,8 +219,8 @@ export default function LanggananPage() {
       subscription.status === "trialing");
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-4 py-5 text-slate-900 sm:px-6 sm:py-7 lg:px-8 dark:bg-[#0b1410] dark:text-slate-100">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-5 text-slate-900 sm:px-6 sm:py-7 lg:px-6 dark:bg-[#0b1410] dark:text-slate-100">
+      <div className="w-full space-y-8">
         {/* Page heading */}
         <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
