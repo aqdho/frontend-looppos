@@ -21,7 +21,9 @@ import {
   IconMenu2,
   IconX,
   IconTrash,
-  IconCreditCard
+  IconCreditCard,
+  IconCrown,
+  IconSparkles
 } from "@tabler/icons-react";
 
 type Notifikasi = {
@@ -280,11 +282,6 @@ export default function DashboardLayout({
       icon: IconReportAnalytics,
     },
 
-    { 
-      href: "/langganan",
-      label: "Langganan",
-      icon: IconCreditCard,
-    },
   ];
 
   const kasirMenu = [
@@ -560,8 +557,52 @@ export default function DashboardLayout({
             </div>
 
             {/* RIGHT HEADER */}
-            {/* NOTIFICATION */}
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              
+              {/* TOMBOL LANGGANAN PREMIUM - KHUSUS OWNER */}
+              {role === "owner" && (
+                <Link
+                  href="/langganan"
+                  aria-label="Buka halaman Langganan"
+                  className={`
+                    group relative inline-flex shrink-0 items-center gap-2
+                    overflow-hidden rounded-xl border px-3 py-2
+                    text-xs font-bold transition-all duration-200
+                    hover:-translate-y-0.5 hover:shadow-md
+                    sm:px-4 sm:text-sm
+                    ${
+                      isActive("/langganan")
+                        ? "border-[#b99a45] bg-gradient-to-r from-[#005c40] via-[#00855d] to-[#006948] text-white shadow-md shadow-[#006948]/20"
+                        : "border-[#d7c18a] bg-gradient-to-r from-[#006948] via-[#00855d] to-[#006948] text-white shadow-sm hover:border-[#c5a65b] hover:shadow-[#c5a65b]/20 dark:border-[#8d763e] dark:from-[#123c2c] dark:via-[#006948] dark:to-[#123c2c]"
+                    }
+                  `}
+                >
+                  {/* Kilauan dekoratif */}
+                  <IconSparkles
+                    size={13}
+                    stroke={2}
+                    className="absolute right-1 top-0.5 text-[#ffe6a0] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-125"
+                  />
+
+                  {/* Ikon mahkota */}
+                  <IconCrown
+                    size={19}
+                    stroke={2}
+                    className="shrink-0 text-[#ffe29a] transition-transform duration-200 group-hover:scale-110"
+                  />
+
+                  <span>Langganan</span>
+
+                  {/* Aksen premium */}
+                  <span className="rounded-md border border-[#ffe29a]/40 bg-[#ffe29a]/15 px-1 py-0.5 text-[9px] font-extrabold tracking-wider text-[#ffe29a]">
+                    PRO
+                  </span>
+                </Link>
+              )}
+
+
+              {/* NOTIFICATION */}
+              <div className="relative">
               <button
                 type="button"
                 onClick={() => setNotificationOpen((prev) => !prev)}
@@ -694,6 +735,7 @@ export default function DashboardLayout({
                   </div>
                 </div>
               )}
+            </div>
             </div>
           </header>
 
