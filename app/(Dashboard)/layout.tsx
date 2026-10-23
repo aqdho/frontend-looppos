@@ -21,6 +21,7 @@ import {
   IconMenu2,
   IconX,
   IconTrash,
+  IconCreditCard
 } from "@tabler/icons-react";
 
 type Notifikasi = {
@@ -277,6 +278,12 @@ export default function DashboardLayout({
       href: "/shift",
       label: "Shift Kasir",
       icon: IconReportAnalytics,
+    },
+
+    { 
+      href: "/langganan",
+      label: "Langganan",
+      icon: IconCreditCard,
     },
   ];
 
