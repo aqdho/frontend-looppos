@@ -304,6 +304,12 @@ export default function Produk() {
     useState(false);
   const [showImportForm, setShowImportForm] =
     useState(false);
+  const [showStockHistory, setShowStockHistory] =
+    useState(false);
+  const [stockMovements, setStockMovements] =
+    useState<any[]>([]);
+  const [loadingStockMovements, setLoadingStockMovements] =
+    useState(false);
   const [importFile, setImportFile] =
     useState<File | null>(null);
   const [importData, setImportData] =
@@ -334,6 +340,39 @@ export default function Produk() {
     loadProducts();
     loadCategories();
   }, []);
+
+  const loadStockMovements = async () => {
+    setLoadingStockMovements(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${API_URL}/products/stock-movements`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          result.pesan || "Gagal mengambil riwayat stok."
+        );
+      }
+
+      setStockMovements(
+        Array.isArray(result.data) ? result.data : []
+      );
+    } catch (error) {
+      console.error("Gagal mengambil riwayat stok:", error);
+      alert("Riwayat stok gagal dimuat. Periksa koneksi server.");
+    } finally {
+      setLoadingStockMovements(false);
+    }
+  };
 
   /* ========================================================= */
   /* LOAD PRODUCTS */
@@ -592,8 +631,8 @@ export default function Produk() {
   /* EDIT */
   /* ========================================================= */
 
-  const handleEdit = (product: any) => { 
-    setEditingProduct({ 
+  const handleEdit = (product: any) => {
+    setEditingProduct({
       id: product.id,
       nama: product.nama,
       qty: product.qty,
@@ -1181,6 +1220,19 @@ export default function Produk() {
 
   {/* ACTION BUTTONS */}
   <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-row xl:flex-wrap xl:items-center xl:justify-end">
+
+    {/* RIWAYAT STOK */}
+    <button
+      type="button"
+      onClick={() => {
+        setShowStockHistory(true);
+        void loadStockMovements();
+      }}
+      className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#cfe5d8] bg-[#eff8f2] px-3.5 text-[11px] font-extrabold text-[#006948] transition hover:bg-[#e2f3e9] sm:w-auto sm:justify-self-end"
+    >
+      <Icon name="clock" size={15}/>
+      Riwayat Pergerakan Stok
+    </button>
 
     {/* TAMBAH PRODUK */}
     <button
@@ -2972,6 +3024,124 @@ export default function Produk() {
           background: #9eafa5;
         }
       `}</style>
+
+        {/* MODAL RIWAYAT STOK */}
+        {showStockHistory && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3 sm:p-6">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="stock-history-title"
+              className="flex max-h-[85vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            >
+              <header className="flex items-center justify-between gap-3 border-b border-[#e5ece7] p-4 sm:p-5">
+                <div>
+                  <h2 id="stock-history-title" className="text-base font-extrabold text-[#0b1c30]">
+                    Riwayat Pergerakan Stok
+                  </h2>
+                  <p className="mt-1 text-xs text-[#718078]">
+                    Catatan stok masuk, stok keluar, dan penyesuaian.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowStockHistory(false)}
+                  className="rounded-lg border border-[#dfe7e3] px-3 py-2 text-sm font-bold text-[#59675f] hover:bg-[#f3f8f5]"
+                >
+                  Tutup
+                </button>
+              </header>
+
+              <div className="overflow-auto">
+                {loadingStockMovements ? (
+                  <p className="p-10 text-center text-sm text-[#718078]">
+                    Memuat riwayat stok...
+                  </p>
+                ) : stockMovements.length === 0 ? (
+                  <p className="p-10 text-center text-sm text-[#718078]">
+                    Belum ada riwayat pergerakan stok.
+                  </p>
+                ) : (
+                  <table className="w-full min-w-[850px] text-left text-xs">
+                    <thead className="sticky top-0 bg-[#f4f8f6] text-[10px] uppercase text-[#59675f]">
+                      <tr>
+                        <th className="px-4 py-3">Waktu</th>
+                        <th className="px-4 py-3">Produk</th>
+                        <th className="px-4 py-3">Jenis</th>
+                        <th className="px-4 py-3 text-right">Jumlah</th>
+                        <th className="px-4 py-3 text-right">Stok Sebelum</th>
+                        <th className="px-4 py-3 text-right">Stok Sesudah</th>
+                        <th className="px-4 py-3">Catatan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#edf1ee]">
+                      {stockMovements.map((item, index) => {
+                        const type = String(item.movement_type || "").toLowerCase();
+                        const incoming = type === "stock_in";
+                        const outgoing = type === "stock_out";
+
+                        return (
+                          <tr key={item.id ?? `${item.product_id}-${item.created_at}-${index}`}>
+                            <td className="whitespace-nowrap px-4 py-3">
+                              {item.created_at
+                                ? new Date(item.created_at).toLocaleString("id-ID")
+                                : "-"}
+                            </td>
+                            <td className="px-4 py-3 font-semibold">
+                              {item.nama_produk || item.product_name || item.nama || "-"}
+                              <span className="mt-1 block text-[10px] text-[#87938a]">
+                                ID: {item.product_id ?? "-"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${
+                                incoming
+                                  ? "bg-[#d8f8e7] text-[#006948]"
+                                  : outgoing
+                                    ? "bg-[#ffdad6] text-[#ba1a1a]"
+                                    : "bg-[#eff4ff] text-[#455b85]"
+                              }`}>
+                                {incoming ? "Stok Masuk" : outgoing ? "Stok Keluar" : "Penyesuaian"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right font-bold">
+                              {incoming ? "+" : outgoing ? "−" : ""}
+                              {Math.abs(Number(item.quantity ?? 0)).toLocaleString("id-ID")}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {Number(item.stock_before ?? 0).toLocaleString("id-ID")}
+                            </td>
+                            <td className="px-4 py-3 text-right font-bold">
+                              {Number(item.stock_after ?? 0).toLocaleString("id-ID")}
+                            </td>
+                            <td className="px-4 py-3 text-[#718078]">
+                              {item.note || item.source_type || "-"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              <footer className="flex items-center justify-between border-t border-[#e5ece7] p-4">
+                <span className="text-xs text-[#718078]">
+                  {stockMovements.length} catatan
+                </span>
+                <button
+                  type="button"
+                  disabled={loadingStockMovements}
+                  onClick={() => void loadStockMovements()}
+                  className="rounded-lg border border-[#cfe5d8] px-3 py-2 text-xs font-bold text-[#006948] hover:bg-[#eff8f2] disabled:opacity-50"
+                >
+                  Muat Ulang
+                </button>
+              </footer>
+            </section>
+          </div>
+        )}
+
     </main>
   );
 }
@@ -3505,7 +3675,7 @@ function ModalActions({
   actionLabel: string;
 }) {
   return (
-    
+
     <div className="mt-6 flex shrink-0 justify-end gap-2 border-t border-[#edf1ef] dark:border-[#263b32] pt-4">
       <button
         type="button"
