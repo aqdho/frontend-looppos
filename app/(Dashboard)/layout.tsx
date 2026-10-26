@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,7 +13,6 @@ import {
   IconCash,
   IconPackage,
   IconReportAnalytics,
-  IconUsers,
   IconSettings,
   IconSearch,
   IconBell,
@@ -40,6 +40,21 @@ type Notifikasi = {
   href: string;
 };
 
+type MenuIcon = typeof IconPackage;
+
+type SubmenuItem = {
+  href: string;
+  label: string;
+  icon: MenuIcon;
+};
+
+type MenuItem = {
+  href: string;
+  label: string;
+  icon: MenuIcon;
+  submenu?: SubmenuItem[];
+};
+
 export default function DashboardLayout({
   children,
 }: {
@@ -64,7 +79,7 @@ export default function DashboardLayout({
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Membuka submenu Produk saat berpindah ke halaman produk atau kategori.
+  // Membuka submenu Produk saat berpindah ke halaman terkait.
   useEffect(() => {
     if (
       pathname.startsWith("/produk") ||
@@ -77,7 +92,7 @@ export default function DashboardLayout({
     }
   }, [pathname]);
 
-  // Mengambil kunci notifikasi yang sesuai dengan pengguna login.
+  // Mengambil kunci notifikasi sesuai pengguna login.
   const getReadKey = (token: string) => {
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
@@ -87,7 +102,7 @@ export default function DashboardLayout({
     }
   };
 
-  // Mengambil daftar ID notifikasi yang sudah dibaca.
+  // Mengambil daftar notifikasi yang sudah dibaca.
   const getSudahDibaca = (readKey: string): string[] => {
     try {
       const hasil = JSON.parse(localStorage.getItem(readKey) || "[]");
@@ -272,20 +287,21 @@ export default function DashboardLayout({
     return pathname === href || pathname.startsWith(href + "/");
   };
 
-  const ownerMenu = [
+  // MENU OWNER.
+  const ownerMenu: MenuItem[] = [
     {
       href: "/dashboard",
-      label: "Dashboard (Owner)",
+      label: "Dashboard",
       icon: IconLayoutDashboard,
     },
     {
       href: "/transaksi",
-      label: "Transaksi Kasir (POS)",
+      label: "Transaksi",
       icon: IconCash,
     },
     {
       href: "/produk",
-      label: "Produk & Kategori",
+      label: "Produk",
       icon: IconPackage,
       submenu: [
         {
@@ -317,22 +333,18 @@ export default function DashboardLayout({
     },
     {
       href: "/laporan",
-      label: "Laporan & Analitik",
+      label: "Laporan",
       icon: IconReportAnalytics,
     },
     {
-      href: "/kasir",
-      label: "Kelola Kasir / Karyawan",
-      icon: IconUsers,
-    },
-    {
-      href: "/shift",
-      label: "Shift Kasir",
-      icon: IconReportAnalytics,
+      href: "/setting",
+      label: "Pengaturan",
+      icon: IconSettings,
     },
   ];
 
-  const kasirMenu = [
+  // MENU KASIR TETAP TERPISAH.
+  const kasirMenu: MenuItem[] = [
     {
       href: "/transaksi",
       label: "Transaksi Kasir (POS)",
@@ -350,7 +362,8 @@ export default function DashboardLayout({
     },
   ];
 
-  const navItems = role === "kasir" ? kasirMenu : ownerMenu;
+  const navItems: MenuItem[] =
+    role === "kasir" ? kasirMenu : ownerMenu;
 
   return (
     <AuthGuard>
@@ -386,9 +399,9 @@ export default function DashboardLayout({
             }
           `}
         >
-          <div className="flex flex-col">
+          <div className="flex min-h-0 flex-col">
             {/* LOGO */}
-            <div className="flex items-center gap-2 px-4 pb-6">
+            <div className="flex shrink-0 items-center gap-2 px-4 pb-6">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center">
                 <img
                   src="/logo-LoopPOS.svg"
@@ -410,6 +423,7 @@ export default function DashboardLayout({
               <button
                 type="button"
                 onClick={() => setOpened(false)}
+                aria-label="Tutup sidebar"
                 className="ml-auto rounded-lg p-1.5 hover:bg-[#eff4ff] dark:hover:bg-[#1d3028] lg:hidden"
               >
                 <IconX
@@ -420,22 +434,24 @@ export default function DashboardLayout({
             </div>
 
             {/* MENU TITLE */}
-            <div className="px-4 py-1">
+            <div className="shrink-0 px-4 py-1">
               <p className="mb-1 px-2 text-[11px] font-bold uppercase tracking-wider text-[#3d4a42] dark:text-[#91a29a]">
                 Menu Utama
               </p>
             </div>
 
             {/* NAVIGATION */}
-            <nav className="flex flex-col gap-1 px-4">
+            <nav className="flex flex-col gap-1 overflow-y-auto px-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
 
-                // MENU DENGAN SUBMENU: KHUSUS PRODUK & KATEGORI.
-                if ("submenu" in item) {
+                if (item.submenu) {
                   const active =
                     pathname.startsWith("/produk") ||
-                    pathname.startsWith("/kategori");
+                    pathname.startsWith("/kategori") ||
+                    pathname.startsWith("/stock-opname") ||
+                    pathname.startsWith("/riwayat-stok") ||
+                    pathname.startsWith("/riwayat-opname");
 
                   return (
                     <div key={item.href}>
@@ -450,15 +466,13 @@ export default function DashboardLayout({
                           rounded-lg px-2 py-2 transition-all
                           ${
                             active
-                              ? "bg-[#00855d] font-bold text-white shadow-sm dark:bg-[#00855d]"
+                              ? "bg-[#00855d] font-bold text-white shadow-sm"
                               : "text-[#3d4a42] hover:bg-[#eff4ff] hover:text-[#0b1c30] dark:text-[#b8c5be] dark:hover:bg-[#1d3028] dark:hover:text-[#f1f5f3]"
                           }
+                          dark:bg-opacity-100
                         `}
                       >
-                        <Icon
-                          size={20}
-                          stroke={active ? 2.1 : 1.8}
-                        />
+                        <Icon size={20} stroke={active ? 2.1 : 1.8} />
 
                         <span className="flex-1 text-left text-[14px] font-semibold leading-5">
                           {item.label}
@@ -476,7 +490,6 @@ export default function DashboardLayout({
                         <div className="ml-3 mt-1 flex flex-col gap-1 border-l border-[#dce5df] pl-3 dark:border-[#293b32]">
                           {item.submenu.map((subitem) => {
                             const SubIcon = subitem.icon;
-
                             const isModalLink =
                               subitem.href.includes("?modal=");
 
@@ -514,7 +527,6 @@ export default function DashboardLayout({
                   );
                 }
 
-                // MENU BIASA.
                 const active = isActive(item.href);
 
                 return (
@@ -524,11 +536,10 @@ export default function DashboardLayout({
                     onClick={() => setOpened(false)}
                     className={`
                       flex items-center gap-2
-                      rounded-lg px-2 py-2
-                      transition-all
+                      rounded-lg px-2 py-2 transition-all
                       ${
                         active
-                          ? "bg-[#00855d] font-bold text-white shadow-sm dark:bg-[#00855d]"
+                          ? "bg-[#00855d] font-bold text-white shadow-sm"
                           : "text-[#3d4a42] hover:bg-[#eff4ff] hover:text-[#0b1c30] dark:text-[#b8c5be] dark:hover:bg-[#1d3028] dark:hover:text-[#f1f5f3]"
                       }
                     `}
@@ -545,7 +556,7 @@ export default function DashboardLayout({
           </div>
 
           {/* SIDEBAR BOTTOM */}
-          <div className="px-4">
+          <div className="shrink-0 px-4">
             {/* STATUS TERMINAL */}
             <div className="mb-3 flex items-center justify-between rounded-lg bg-[#eff4ff] p-2 dark:bg-[#17231e]">
               <div className="flex items-center gap-2">
@@ -568,29 +579,6 @@ export default function DashboardLayout({
 
               <span className="h-2 w-2 animate-pulse rounded-full bg-[#006948] dark:bg-[#28b987]" />
             </div>
-
-            {/* SETTING */}
-            {role === "owner" && (
-              <Link
-                href="/setting"
-                onClick={() => setOpened(false)}
-                className={`
-                  mb-1 flex items-center gap-2
-                  rounded-lg px-2 py-2 transition-colors
-                  ${
-                    isActive("/setting")
-                      ? "bg-[#00855d] font-bold text-white dark:bg-[#00855d]"
-                      : "text-[#3d4a42] hover:bg-[#eff4ff] dark:text-[#b8c5be] dark:hover:bg-[#1d3028]"
-                  }
-                `}
-              >
-                <IconSettings size={20} stroke={1.8} />
-
-                <span className="text-[14px] font-semibold">
-                  Setting
-                </span>
-              </Link>
-            )}
 
             {/* LOGOUT */}
             <div className="mt-1">
@@ -620,6 +608,7 @@ export default function DashboardLayout({
               <button
                 type="button"
                 onClick={() => setOpened(true)}
+                aria-label="Buka menu"
                 className="rounded-lg p-2 text-[#3d4a42] hover:bg-[#eff4ff] dark:text-[#b8c5be] dark:hover:bg-[#1d3028] lg:hidden"
               >
                 <IconMenu2 size={22} />
@@ -628,13 +617,12 @@ export default function DashboardLayout({
               {/* TOKO BUKA */}
               <div className="flex items-center gap-1.5 rounded-full bg-[#e5eeff] px-2 py-1 dark:bg-[#163026]">
                 <span className="h-2.5 w-2.5 rounded-full bg-[#006948] dark:bg-[#28b987]" />
-
                 <span className="text-[11px] font-bold uppercase text-[#006948] dark:text-[#28b987]">
                   Toko Buka
                 </span>
               </div>
 
-              {/* SHIFT KASIR */}
+              {/* SHIFT KASIR: TETAP DIPERTAHANKAN DI HEADER */}
               <Link
                 href="/shift"
                 onClick={() => setOpened(false)}
@@ -749,7 +737,6 @@ export default function DashboardLayout({
 
                 {notificationOpen && (
                   <div className="absolute right-0 top-full z-50 mt-2 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-xl border border-[#e1e8e3] bg-white shadow-xl dark:border-[#293b32] dark:bg-[#101a16]">
-                    {/* DROPDOWN HEADER */}
                     <div className="flex items-center justify-between border-b border-[#e1e8e3] px-4 py-3 dark:border-[#293b32]">
                       <div>
                         <h3 className="text-sm font-bold text-[#0b1c30] dark:text-[#f1f5f3]">
@@ -795,7 +782,6 @@ export default function DashboardLayout({
                       </div>
                     </div>
 
-                    {/* DAFTAR NOTIFIKASI */}
                     <div className="max-h-[360px] overflow-y-auto">
                       {notifications.length === 0 ? (
                         <div className="px-4 py-10 text-center">
