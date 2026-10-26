@@ -1513,10 +1513,7 @@ export default function Produk() {
               {/* TABLE HEADER */}
               <div className="flex flex-col justify-between gap-3 border-b border-[#e4e9ed] bg-[#eff4ff]/70 px-3 py-3 sm:flex-row sm:items-center sm:px-4 dark:border-[#26382f] dark:bg-[#17231e]">
                 <div className="flex items-center gap-3">
-                  <CustomCheckbox
-                    checked={allCurrentSelected}
-                    onChange={toggleSelectAll}
-                  />
+                  
 
                   <div>
                     <p className="text-[11px] font-extrabold text-[#0b1c30] dark:text-[#e7f1ec]">
@@ -1555,18 +1552,7 @@ export default function Produk() {
                 <table className="w-full min-w-[980px] border-collapse bg-white text-left dark:bg-[#101a16]">
                   <thead>
                     <tr className="border-b border-[#e4e9ed] bg-[#f7f9fc] text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#718078] dark:border-[#26382f] dark:bg-[#1a2822] dark:text-[#9eb2a7]">
-                      <th className="bg-[#f7f9fc] px-3 py-3 text-center align-middle dark:bg-[#1a2822]">
-                        <div className="flex items-center justify-center">
-                          <CustomCheckbox
-                            checked={
-                              allCurrentSelected
-                            }
-                            onChange={
-                              toggleSelectAll
-                            }
-                          />
-                        </div>
-                      </th>
+                      
 
                       <th className="bg-[#f7f9fc] px-3 py-3 dark:bg-[#1a2822]">
                         Gambar & Nama Produk
@@ -1602,7 +1588,7 @@ export default function Produk() {
                     {currentProducts.length === 0 ? (
                       <tr className="bg-white dark:bg-[#101a16]">
                         <td
-                          colSpan={8}
+                          colSpan={7}
                           className="bg-white py-20 text-center dark:bg-[#101a16]"
                         >
                           <div className="mx-auto flex max-w-xs flex-col items-center">
@@ -1665,21 +1651,7 @@ export default function Produk() {
                               }
                               className="group bg-white transition-colors hover:bg-[#f7faf9] dark:bg-[#101a16] dark:hover:bg-[#17231e]"
                             >
-                              {/* CHECKBOX */}
-                              <td className="bg-white px-3 py-3 text-center align-middle dark:bg-[#101a16]">
-                                <div className="flex items-center justify-center">
-                                  <CustomCheckbox
-                                    checked={
-                                      isSelected
-                                    }
-                                    onChange={() =>
-                                      toggleSelectProduct(
-                                        product.id
-                                      )
-                                    }
-                                  />
-                                </div>
-                              </td>
+                              
 
                               {/* PRODUK */}
                               <td className="bg-white px-3 py-3 dark:bg-[#101a16]">
