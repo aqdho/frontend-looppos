@@ -21,9 +21,13 @@ import {
   IconMenu2,
   IconX,
   IconTrash,
-  IconCreditCard,
   IconCrown,
-  IconSparkles
+  IconSparkles,
+  IconChevronDown,
+  IconTag,
+  IconClipboardCheck,
+  IconHistory,
+  IconClipboardList,
 } from "@tabler/icons-react";
 
 type Notifikasi = {
@@ -43,6 +47,14 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
 
+  const [produkMenuOpen, setProdukMenuOpen] = useState(
+    pathname.startsWith("/produk") ||
+      pathname.startsWith("/kategori") ||
+      pathname.startsWith("/stock-opname") ||
+      pathname.startsWith("/riwayat-stok") ||
+      pathname.startsWith("/riwayat-opname")
+  );
+
   const [opened, setOpened] = useState(false);
   const [role, setRole] = useState<string | null>(null);
 
@@ -51,6 +63,19 @@ export default function DashboardLayout({
   const [unreadCount, setUnreadCount] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Membuka submenu Produk saat berpindah ke halaman produk atau kategori.
+  useEffect(() => {
+    if (
+      pathname.startsWith("/produk") ||
+      pathname.startsWith("/kategori") ||
+      pathname.startsWith("/stock-opname") ||
+      pathname.startsWith("/riwayat-stok") ||
+      pathname.startsWith("/riwayat-opname")
+    ) {
+      setProdukMenuOpen(true);
+    }
+  }, [pathname]);
 
   // Mengambil kunci notifikasi yang sesuai dengan pengguna login.
   const getReadKey = (token: string) => {
@@ -121,7 +146,6 @@ export default function DashboardLayout({
       const requestController = new AbortController();
       controller = requestController;
 
-      // Timeout request: 20 detik.
       const timeout = window.setTimeout(() => {
         requestController.abort();
       }, 20_000);
@@ -184,10 +208,8 @@ export default function DashboardLayout({
       }
     };
 
-    // Ambil notifikasi saat dashboard pertama kali dibuka.
     void ambilNotifikasi();
 
-    // Polling setiap 60 detik untuk mengurangi beban backend.
     interval = window.setInterval(() => {
       void ambilNotifikasi();
     }, 60_000);
@@ -265,6 +287,33 @@ export default function DashboardLayout({
       href: "/produk",
       label: "Produk & Kategori",
       icon: IconPackage,
+      submenu: [
+        {
+          href: "/produk",
+          label: "Daftar Produk",
+          icon: IconPackage,
+        },
+        {
+          href: "/kategori",
+          label: "Kategori",
+          icon: IconTag,
+        },
+        {
+          href: "/produk?modal=stock-opname",
+          label: "Stock Opname",
+          icon: IconClipboardCheck,
+        },
+        {
+          href: "/produk?modal=stock-history",
+          label: "Riwayat Pergerakan Stok",
+          icon: IconHistory,
+        },
+        {
+          href: "/produk?modal=stock-opname-history",
+          label: "Riwayat Opname",
+          icon: IconClipboardList,
+        },
+      ],
     },
     {
       href: "/laporan",
@@ -281,7 +330,6 @@ export default function DashboardLayout({
       label: "Shift Kasir",
       icon: IconReportAnalytics,
     },
-
   ];
 
   const kasirMenu = [
@@ -382,6 +430,91 @@ export default function DashboardLayout({
             <nav className="flex flex-col gap-1 px-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
+
+                // MENU DENGAN SUBMENU: KHUSUS PRODUK & KATEGORI.
+                if ("submenu" in item) {
+                  const active =
+                    pathname.startsWith("/produk") ||
+                    pathname.startsWith("/kategori");
+
+                  return (
+                    <div key={item.href}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setProdukMenuOpen((prev) => !prev)
+                        }
+                        aria-expanded={produkMenuOpen}
+                        className={`
+                          flex w-full items-center gap-2
+                          rounded-lg px-2 py-2 transition-all
+                          ${
+                            active
+                              ? "bg-[#00855d] font-bold text-white shadow-sm dark:bg-[#00855d]"
+                              : "text-[#3d4a42] hover:bg-[#eff4ff] hover:text-[#0b1c30] dark:text-[#b8c5be] dark:hover:bg-[#1d3028] dark:hover:text-[#f1f5f3]"
+                          }
+                        `}
+                      >
+                        <Icon
+                          size={20}
+                          stroke={active ? 2.1 : 1.8}
+                        />
+
+                        <span className="flex-1 text-left text-[14px] font-semibold leading-5">
+                          {item.label}
+                        </span>
+
+                        <IconChevronDown
+                          size={17}
+                          className={`transition-transform ${
+                            produkMenuOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {produkMenuOpen && (
+                        <div className="ml-3 mt-1 flex flex-col gap-1 border-l border-[#dce5df] pl-3 dark:border-[#293b32]">
+                          {item.submenu.map((subitem) => {
+                            const SubIcon = subitem.icon;
+
+                            const isModalLink =
+                              subitem.href.includes("?modal=");
+
+                            const subActive = isModalLink
+                              ? false
+                              : pathname === subitem.href ||
+                                pathname.startsWith(
+                                  subitem.href + "/"
+                                );
+
+                            return (
+                              <Link
+                                key={subitem.href}
+                                href={subitem.href}
+                                onClick={() => setOpened(false)}
+                                className={`
+                                  flex items-center gap-2
+                                  rounded-lg px-2 py-2
+                                  text-[12px] transition-colors
+                                  ${
+                                    subActive
+                                      ? "bg-[#e5f4ec] font-bold text-[#006948] dark:bg-[#163026] dark:text-[#28b987]"
+                                      : "text-[#52645a] hover:bg-[#eff4ff] hover:text-[#006948] dark:text-[#b8c5be] dark:hover:bg-[#1d3028] dark:hover:text-[#28b987]"
+                                  }
+                                `}
+                              >
+                                <SubIcon size={17} stroke={1.8} />
+                                <span>{subitem.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // MENU BIASA.
                 const active = isActive(item.href);
 
                 return (
@@ -391,8 +524,7 @@ export default function DashboardLayout({
                     onClick={() => setOpened(false)}
                     className={`
                       flex items-center gap-2
-                      rounded-lg
-                      px-2 py-2
+                      rounded-lg px-2 py-2
                       transition-all
                       ${
                         active
@@ -444,9 +576,7 @@ export default function DashboardLayout({
                 onClick={() => setOpened(false)}
                 className={`
                   mb-1 flex items-center gap-2
-                  rounded-lg
-                  px-2 py-2
-                  transition-colors
+                  rounded-lg px-2 py-2 transition-colors
                   ${
                     isActive("/setting")
                       ? "bg-[#00855d] font-bold text-white dark:bg-[#00855d]"
@@ -509,7 +639,8 @@ export default function DashboardLayout({
                 href="/shift"
                 onClick={() => setOpened(false)}
                 className={`
-                  flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2
+                  flex shrink-0 items-center gap-1.5
+                  rounded-lg px-3 py-2
                   text-[12px] font-semibold transition-colors
                   ${
                     isActive("/shift")
@@ -558,8 +689,7 @@ export default function DashboardLayout({
 
             {/* RIGHT HEADER */}
             <div className="flex items-center gap-2">
-              
-              {/* TOMBOL LANGGANAN PREMIUM - KHUSUS OWNER */}
+              {/* LANGGANAN PREMIUM - KHUSUS OWNER */}
               {role === "owner" && (
                 <Link
                   href="/langganan"
@@ -577,14 +707,12 @@ export default function DashboardLayout({
                     }
                   `}
                 >
-                  {/* Kilauan dekoratif */}
                   <IconSparkles
                     size={13}
                     stroke={2}
                     className="absolute right-1 top-0.5 text-[#ffe6a0] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-125"
                   />
 
-                  {/* Ikon mahkota */}
                   <IconCrown
                     size={19}
                     stroke={2}
@@ -593,149 +721,157 @@ export default function DashboardLayout({
 
                   <span>Langganan</span>
 
-                  {/* Aksen premium */}
                   <span className="rounded-md border border-[#ffe29a]/40 bg-[#ffe29a]/15 px-1 py-0.5 text-[9px] font-extrabold tracking-wider text-[#ffe29a]">
                     PRO
                   </span>
                 </Link>
               )}
 
-
               {/* NOTIFICATION */}
               <div className="relative">
-              <button
-                type="button"
-                onClick={() => setNotificationOpen((prev) => !prev)}
-                aria-label="Notifikasi"
-                aria-expanded={notificationOpen}
-                className="relative rounded-lg p-1.5 text-[#3d4a42] transition-colors hover:bg-[#eff4ff] dark:text-[#b8c5be] dark:hover:bg-[#1d3028]"
-              >
-                <IconBell size={22} stroke={1.8} />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setNotificationOpen((prev) => !prev)
+                  }
+                  aria-label="Notifikasi"
+                  aria-expanded={notificationOpen}
+                  className="relative rounded-lg p-1.5 text-[#3d4a42] transition-colors hover:bg-[#eff4ff] dark:text-[#b8c5be] dark:hover:bg-[#1d3028]"
+                >
+                  <IconBell size={22} stroke={1.8} />
 
-                {unreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ba1a1a] px-1 text-[9px] font-bold text-white">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </button>
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ba1a1a] px-1 text-[9px] font-bold text-white">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
 
-              {notificationOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-xl border border-[#e1e8e3] bg-white shadow-xl dark:border-[#293b32] dark:bg-[#101a16]">
-                  {/* DROPDOWN HEADER */}
-                  <div className="flex items-center justify-between border-b border-[#e1e8e3] px-4 py-3 dark:border-[#293b32]">
-                    <div>
-                      <h3 className="text-sm font-bold text-[#0b1c30] dark:text-[#f1f5f3]">
-                        Notifikasi
-                      </h3>
+                {notificationOpen && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-xl border border-[#e1e8e3] bg-white shadow-xl dark:border-[#293b32] dark:bg-[#101a16]">
+                    {/* DROPDOWN HEADER */}
+                    <div className="flex items-center justify-between border-b border-[#e1e8e3] px-4 py-3 dark:border-[#293b32]">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#0b1c30] dark:text-[#f1f5f3]">
+                          Notifikasi
+                        </h3>
 
-                      <p className="mt-0.5 text-xs text-[#64746b] dark:text-[#91a29a]">
-                        {unreadCount > 0
-                          ? `${unreadCount} belum dibaca`
-                          : "Semua sudah dibaca"}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      {notifications.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (window.confirm("Hapus semua notifikasi?")) {
-                              void hapusNotifikasi();
-                            }
-                          }}
-                          title="Hapus semua notifikasi"
-                          aria-label="Hapus semua notifikasi"
-                          className="rounded-lg p-1.5 text-[#64746b] hover:bg-red-50 hover:text-red-600 dark:text-[#b8c5be] dark:hover:bg-[#38201e] dark:hover:text-red-400"
-                        >
-                          <IconTrash size={17} />
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => setNotificationOpen(false)}
-                        aria-label="Tutup notifikasi"
-                        className="rounded-lg p-1.5 text-[#64746b] hover:bg-[#eff4ff] dark:text-[#b8c5be] dark:hover:bg-[#1d3028]"
-                      >
-                        <IconX size={18} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* DAFTAR NOTIFIKASI */}
-                  <div className="max-h-[360px] overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="px-4 py-10 text-center">
-                        <IconBell
-                          size={28}
-                          stroke={1.5}
-                          className="mx-auto mb-2 text-[#91a29a]"
-                        />
-
-                        <p className="text-sm font-semibold text-[#3d4a42] dark:text-[#c7d3cd]">
-                          Belum ada notifikasi
-                        </p>
-
-                        <p className="mt-1 text-xs text-[#64746b] dark:text-[#91a29a]">
-                          Notifikasi baru akan muncul di sini.
+                        <p className="mt-0.5 text-xs text-[#64746b] dark:text-[#91a29a]">
+                          {unreadCount > 0
+                            ? `${unreadCount} belum dibaca`
+                            : "Semua sudah dibaca"}
                         </p>
                       </div>
-                    ) : (
-                      notifications.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-start gap-2 border-b border-[#e1e8e3] px-3 py-3 dark:border-[#293b32]"
-                        >
-                          <Link
-                            href={item.href || "/dashboard"}
-                            onClick={() => {
-                              tandaiDibaca(item.id);
-                              setNotificationOpen(false);
-                            }}
-                            className="flex min-w-0 flex-1 gap-3"
-                          >
-                            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e5f4ec] text-[#006948] dark:bg-[#163026] dark:text-[#28b987]">
-                              {item.tipe === "transaksi" ? (
-                                <IconCash size={18} />
-                              ) : (
-                                <IconPackage size={18} />
-                              )}
-                            </span>
 
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-sm font-semibold text-[#0b1c30] dark:text-[#f1f5f3]">
-                                {item.judul}
-                              </span>
-
-                              <span className="mt-1 block text-xs leading-5 text-[#52645a] dark:text-[#b8c5be]">
-                                {item.pesan}
-                              </span>
-
-                              {item.waktu && (
-                                <span className="mt-1 block text-[11px] text-[#819087] dark:text-[#91a29a]">
-                                  {new Date(item.waktu).toLocaleString("id-ID")}
-                                </span>
-                              )}
-                            </span>
-                          </Link>
-
+                      <div className="flex items-center gap-1">
+                        {notifications.length > 0 && (
                           <button
                             type="button"
-                            title="Hapus notifikasi"
-                            aria-label={`Hapus ${item.judul}`}
-                            onClick={() => void hapusNotifikasi(item.id)}
-                            className="shrink-0 rounded-lg p-1.5 text-[#819087] hover:bg-red-50 hover:text-red-600 dark:hover:bg-[#38201e] dark:hover:text-red-400"
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Hapus semua notifikasi?"
+                                )
+                              ) {
+                                void hapusNotifikasi();
+                              }
+                            }}
+                            title="Hapus semua notifikasi"
+                            aria-label="Hapus semua notifikasi"
+                            className="rounded-lg p-1.5 text-[#64746b] hover:bg-red-50 hover:text-red-600 dark:text-[#b8c5be] dark:hover:bg-[#38201e] dark:hover:text-red-400"
                           >
-                            <IconTrash size={16} />
+                            <IconTrash size={17} />
                           </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setNotificationOpen(false)}
+                          aria-label="Tutup notifikasi"
+                          className="rounded-lg p-1.5 text-[#64746b] hover:bg-[#eff4ff] dark:text-[#b8c5be] dark:hover:bg-[#1d3028]"
+                        >
+                          <IconX size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* DAFTAR NOTIFIKASI */}
+                    <div className="max-h-[360px] overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-10 text-center">
+                          <IconBell
+                            size={28}
+                            stroke={1.5}
+                            className="mx-auto mb-2 text-[#91a29a]"
+                          />
+
+                          <p className="text-sm font-semibold text-[#3d4a42] dark:text-[#c7d3cd]">
+                            Belum ada notifikasi
+                          </p>
+
+                          <p className="mt-1 text-xs text-[#64746b] dark:text-[#91a29a]">
+                            Notifikasi baru akan muncul di sini.
+                          </p>
                         </div>
-                      ))
-                    )}
+                      ) : (
+                        notifications.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-start gap-2 border-b border-[#e1e8e3] px-3 py-3 dark:border-[#293b32]"
+                          >
+                            <Link
+                              href={item.href || "/dashboard"}
+                              onClick={() => {
+                                tandaiDibaca(item.id);
+                                setNotificationOpen(false);
+                              }}
+                              className="flex min-w-0 flex-1 gap-3"
+                            >
+                              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e5f4ec] text-[#006948] dark:bg-[#163026] dark:text-[#28b987]">
+                                {item.tipe === "transaksi" ? (
+                                  <IconCash size={18} />
+                                ) : (
+                                  <IconPackage size={18} />
+                                )}
+                              </span>
+
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-semibold text-[#0b1c30] dark:text-[#f1f5f3]">
+                                  {item.judul}
+                                </span>
+
+                                <span className="mt-1 block text-xs leading-5 text-[#52645a] dark:text-[#b8c5be]">
+                                  {item.pesan}
+                                </span>
+
+                                {item.waktu && (
+                                  <span className="mt-1 block text-[11px] text-[#819087] dark:text-[#91a29a]">
+                                    {new Date(
+                                      item.waktu
+                                    ).toLocaleString("id-ID")}
+                                  </span>
+                                )}
+                              </span>
+                            </Link>
+
+                            <button
+                              type="button"
+                              title="Hapus notifikasi"
+                              aria-label={`Hapus ${item.judul}`}
+                              onClick={() =>
+                                void hapusNotifikasi(item.id)
+                              }
+                              className="shrink-0 rounded-lg p-1.5 text-[#819087] hover:bg-red-50 hover:text-red-600 dark:hover:bg-[#38201e] dark:hover:text-red-400"
+                            >
+                              <IconTrash size={16} />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
             </div>
           </header>
 
