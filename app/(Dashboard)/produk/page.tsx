@@ -327,6 +327,7 @@ export default function Produk() {
     useState<number | "all">("all");
   const [selectedProducts, setSelectedProducts] =
     useState<number[]>([]);
+  const [selectionMode, setSelectionMode] = useState(false);
   const [newProduct, setNewProduct] = useState({
     nama: "",
     qty: "",
@@ -1535,14 +1536,13 @@ export default function Produk() {
 
                   <button
                     type="button"
-                    className="flex items-center gap-1.5 rounded-md border border-[#dce4e8] bg-white px-2.5 py-1.5 text-[9px] font-extrabold text-[#58655e] transition hover:bg-[#f6f9f7] dark:border-[#30463b] dark:bg-[#1a2822] dark:text-[#b8c9c0] dark:hover:bg-[#22362c]"
+                    onClick={() => { 
+                      setSelectionMode((prev) => !prev);
+                      setSelectedProducts([]);
+                    }}
+                    className="rounded-md border border-[#dce4e8] bg-white px-3 py-1.5 text-[9px] font-extrabold text-[#006948] transition hover:bg-[#f0f8f4] dark:border-[#30463b] dark:bg-[#1a2822] dark:text-[#55c99b]"
                   >
-                    Bulk Action
-
-                    <Icon
-                      name="chevron-down"
-                      size={12}
-                    />
+                    {selectionMode ? "Batal" : "Pilih"}
                   </button>
                 </div>
               </div>
@@ -1552,7 +1552,28 @@ export default function Produk() {
                 <table className="w-full min-w-[980px] border-collapse bg-white text-left dark:bg-[#101a16]">
                   <thead>
                     <tr className="border-b border-[#e4e9ed] bg-[#f7f9fc] text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#718078] dark:border-[#26382f] dark:bg-[#1a2822] dark:text-[#9eb2a7]">
-                      
+                      <th
+                        className={`overflow-hidden text-center align-middle transition-all duration-300 ${
+                          selectionMode
+                            ? "w-12 px-3 py-3"
+                            : "w-0 px-0 py-0"
+                        }`}
+                      >
+                        <div
+                          className={`flex items-center justify-center transition-all duration-300 ${
+                            selectionMode
+                              ? "translate-x-0 opacity-100"
+                              : "-translate-x-3 opacity-0"
+                          }`}
+                        >
+                          {selectionMode && (
+                            <CustomCheckbox
+                              checked={allCurrentSelected}
+                              onChange={toggleSelectAll}
+                            />
+                          )}
+                        </div>
+                      </th>
 
                       <th className="bg-[#f7f9fc] px-3 py-3 dark:bg-[#1a2822]">
                         Gambar & Nama Produk
@@ -1652,6 +1673,31 @@ export default function Produk() {
                               className="group bg-white transition-colors hover:bg-[#f7faf9] dark:bg-[#101a16] dark:hover:bg-[#17231e]"
                             >
                               
+                              {/* CHECKBOX SELEKSI */}
+                                <td
+                                  className={`overflow-hidden text-center align-middle transition-all duration-300 ${
+                                    selectionMode
+                                      ? "w-12 px-3 py-3"
+                                      : "w-0 px-0 py-0"
+                                  }`}
+                                >
+                                  <div
+                                    className={`flex items-center justify-center transition-all duration-300 ${
+                                      selectionMode
+                                        ? "translate-x-0 opacity-100"
+                                        : "-translate-x-3 opacity-0"
+                                    }`}
+                                  >
+                                    {selectionMode && (
+                                      <CustomCheckbox
+                                        checked={isSelected}
+                                        onChange={() =>
+                                          toggleSelectProduct(product.id)
+                                        }
+                                      />
+                                    )}
+                                  </div>
+                                </td>
 
                               {/* PRODUK */}
                               <td className="bg-white px-3 py-3 dark:bg-[#101a16]">
