@@ -310,6 +310,42 @@ export default function Produk() {
     useState<any[]>([]);
   const [loadingStockMovements, setLoadingStockMovements] =
     useState(false);
+  const [showStockOpname, setShowStockOpname] = 
+    useState(false);
+  const [stockOpnameItems, setStockOpnameItems] = 
+    useState< 
+      { 
+        product_id: number;
+        nama: string;
+        stock_system: number;
+        stock_physical: string;
+      } []
+    >([]);
+  const [stockOpnameNote, setStockOpnameNote] = 
+      useState("");
+  const [savingStockOpname, setSavingStockOpname] = 
+      useState(false);
+  const [showStockOpnameHistory, setShowStockOpnameHistory] = 
+      useState(false);
+  const [stockOpnameHistory, setStockOpnameHistory] =
+    useState<
+      {
+        id: number;
+        total_items: number;
+        total_adjustments: number;
+        note: string | null;
+        created_at: string;
+        details: {
+          product_id: number;
+          product_name: string;
+          stock_system: number;
+          stock_physical: number;
+          difference: number;
+        }[];
+      }[]
+    >([]);
+  const [loadingStockOpnameHistory, setLoadingStockOpnameHistory] =
+    useState(false);
   const [importFile, setImportFile] =
     useState<File | null>(null);
   const [importData, setImportData] =
@@ -375,6 +411,49 @@ export default function Produk() {
     }
   };
 
+  const loadStockOpnameHistory = async () => { 
+    setLoadingStockOpnameHistory(true);
+
+    try { 
+      const token = localStorage.getItem("token");
+
+      if (!token) { 
+        throw new Error("Sesi login tidak ditemukan. Silakan login kembali");
+      }
+
+      const res = await fetch( 
+        `${API_URL}/products/stock-opname`,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) { 
+        throw new Error( 
+          result.pesan || "Gagal mengambil riwayat stok opname." 
+        );
+      }
+
+      setStockOpnameHistory( 
+        Array.isArray(result.data) ? result.data : [] 
+      );
+    } catch (error) { 
+      console.error("Gagal mengambil riwayat stok opname:", error);
+
+      alert( 
+        error instanceof Error 
+          ? error.message 
+          : "Riwayat stok opname gagal dimuat"
+      );
+    } finally { 
+      setLoadingStockOpnameHistory(false);
+    }
+  };
+
   /* ========================================================= */
   /* LOAD PRODUCTS */
   /* ========================================================= */
@@ -401,6 +480,97 @@ export default function Produk() {
       setProducts([]);
     }
   };
+
+  const openStockOpname = () => {
+  setStockOpnameItems(
+    products.map((product) => ({
+      product_id: Number(product.id),
+      nama: product.nama,
+      stock_system: Number(product.qty || 0),
+      stock_physical: String(Number(product.qty || 0)),
+    }))
+  );
+
+  setStockOpnameNote("");
+  setShowStockOpname(true);
+};
+
+const saveStockOpname = async () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Sesi login tidak ditemukan. Silakan login kembali.");
+    return;
+  }
+
+  if (stockOpnameItems.length === 0) {
+    alert("Tidak ada produk untuk opname.");
+    return;
+  }
+
+  const invalidItem = stockOpnameItems.find((item) => {
+    const qty = Number(item.stock_physical);
+
+    return (
+      item.stock_physical.trim() === "" ||
+      !Number.isSafeInteger(qty) ||
+      qty < 0
+    );
+  });
+
+  if (invalidItem) {
+    alert(
+      `Stok fisik produk "${invalidItem.nama}" harus berupa bilangan bulat minimal 0.`
+    );
+    return;
+  }
+
+  if (!window.confirm("Simpan hasil opname dan sesuaikan stok produk?")) {
+    return;
+  }
+
+  setSavingStockOpname(true);
+
+  try {
+    const response = await fetch(`${API_URL}/products/stock-opname`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        note: stockOpnameNote,
+        items: stockOpnameItems.map((item) => ({
+          product_id: item.product_id,
+          stock_physical: Number(item.stock_physical),
+        })),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.pesan || "Gagal menyimpan stok opname.");
+    }
+
+    setShowStockOpname(false);
+
+    await loadProducts();
+    await loadStockMovements();
+
+    alert(
+      `Stok opname berhasil disimpan.\nProduk diperiksa: ${result.data.total_items}\nProduk disesuaikan: ${result.data.total_adjustments}`
+    );
+  } catch (error) {
+    alert(
+      error instanceof Error
+        ? error.message
+        : "Terjadi kesalahan saat menyimpan stok opname."
+    );
+  } finally {
+    setSavingStockOpname(false);
+  }
+};
 
   /* ========================================================= */
   /* LOAD CATEGORIES */
@@ -1188,110 +1358,133 @@ export default function Produk() {
         <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-4 sm:gap-5">
 
          {/* HEADER */}
-<section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
 
-  {/* TITLE */}
-  <div className="min-w-0">
-    <div className="mb-2 flex flex-wrap items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#6d7a72] sm:text-[10px]">
-      <span>
-        Inventaris Master
-      </span>
+            {/* TITLE */}
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2 text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#6d7a72] sm:text-[10px]">
+                <span>
+                  Inventaris Master
+                </span>
 
-      <span className="text-[#bccac0]">
-        /
-      </span>
+                <span className="text-[#bccac0]">
+                  /
+                </span>
 
-      <span className="text-[#006948]">
-        Katalog Produk POS
-      </span>
-    </div>
+                <span className="text-[#006948]">
+                  Katalog Produk POS
+                </span>
+              </div>
 
-    <h1 className="text-[23px] font-extrabold leading-tight tracking-[-0.03em] text-[#0b1c30] sm:text-[28px] lg:text-[32px]">
-      Produk & Manajemen
-      Kategori
-    </h1>
+              <h1 className="text-[23px] font-extrabold leading-tight tracking-[-0.03em] text-[#0b1c30] sm:text-[28px] lg:text-[32px]">
+                Produk & Manajemen
+                Kategori
+              </h1>
 
-    <p className="mt-2 max-w-3xl text-[11px] font-medium leading-5 text-[#6d7a72] sm:text-[13px]">
-      Kelola produk, harga jual,
-      kategori, dan pantau
-      persediaan toko secara
-      realtime.
-    </p>
-  </div>
+              <p className="mt-2 max-w-3xl text-[11px] font-medium leading-5 text-[#6d7a72] sm:text-[13px]">
+                Kelola produk, harga jual,
+                kategori, dan pantau
+                persediaan toko secara
+                realtime.
+              </p>
+            </div>
 
-  {/* ACTION BUTTONS */}
-  <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-row xl:flex-wrap xl:items-center xl:justify-end">
+            {/* ACTION BUTTONS */}
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-row xl:flex-wrap xl:items-center xl:justify-end">
 
-    {/* RIWAYAT STOK */}
-    <button
-      type="button"
-      onClick={() => {
-        setShowStockHistory(true);
-        void loadStockMovements();
-      }}
-      className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#cfe5d8] bg-[#eff8f2] px-3.5 text-[11px] font-extrabold text-[#006948] transition hover:bg-[#e2f3e9] sm:w-auto sm:justify-self-end"
-    >
-      <Icon name="clock" size={15}/>
-      Riwayat Pergerakan Stok
-    </button>
+              {/* RIWAYAT STOK */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowStockHistory(true);
+                  void loadStockMovements();
+                }}
+                className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#cfe5d8] bg-[#eff8f2] px-3.5 text-[11px] font-extrabold text-[#006948] transition hover:bg-[#e2f3e9] sm:w-auto sm:justify-self-end"
+              >
+                <Icon name="clock" size={15}/>
+                Riwayat Pergerakan Stok
+              </button>
 
-    {/* TAMBAH PRODUK */}
-    <button
-      type="button"
-      onClick={() =>
-        setShowAddForm(true)
-      }
-      className="order-1 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#006948] px-4 text-[11px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,105,72,0.22)] transition hover:bg-[#00583d] active:scale-[0.98] sm:col-span-2 sm:justify-self-end sm:w-auto xl:order-3 xl:col-span-1"
-    >
-      <PlusIcon />
+              {/* STOK OPNAME */}
+              <button
+                type="button"
+                onClick={openStockOpname}
+                className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#a9c7b7] bg-[#eff7f2] px-3.5 text-[11px] font-extrabold text-[#006948] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:bg-[#e1f2e8] sm:w-auto sm:justify-self-end"
+              >
+                <Icon name="clipboard-check" size={15} />
+                Stok Opname
+              </button>
 
-      Tambah Produk Baru
-    </button>
+              {/* RIWAYAT STOK OPNAME */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowStockOpnameHistory(true);
+                  void loadStockOpnameHistory();
+                }}
+                className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#cfe5d8] bg-[#eff8f2] px-3.5 text-[11px] font-extrabold text-[#006948] transition hover:bg-[#e2f3e9] sm:w-auto sm:justify-self-end"
+              >
+                <Icon name="history" size={15} />
+                Riwayat Opname
+              </button>
 
-    {/* IMPORT CSV */}
-    <button
-      type="button"
-      onClick={() =>
-        setShowImportForm(true)
-      }
-      className="order-2 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e1e8e3] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#a9c7b7] hover:bg-[#f5faf7] sm:w-auto sm:justify-self-end xl:order-2"
-    >
-      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#eff7f2] text-[#006948]">
-        <Icon
-          name="upload"
-          size={14}
-        />
-      </span>
+              {/* TAMBAH PRODUK */}
+              <button
+                type="button"
+                onClick={() =>
+                  setShowAddForm(true)
+                }
+                className="order-1 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#006948] px-4 text-[11px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,105,72,0.22)] transition hover:bg-[#00583d] active:scale-[0.98] sm:col-span-2 sm:justify-self-end sm:w-auto xl:order-3 xl:col-span-1"
+              >
+                <PlusIcon />
 
-      Import Data CSV
-    </button>
+                Tambah Produk Baru
+              </button>
 
-    {/* KELOLA KATEGORI */}
-    <button
-      type="button"
-      onClick={() =>
-        router.push("/kategori")
-      }
-      className="order-3 group flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#dce8e1] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#8fbea6] hover:bg-[#f3faf6] hover:text-[#006948] sm:w-auto sm:justify-self-end xl:order-1"
-    >
-      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#e8f7ef] text-[#006948] transition group-hover:bg-[#d8f1e4]">
-        <Icon
-          name="settings"
-          size={14}
-        />
-      </span>
+              {/* IMPORT CSV */}
+              <button
+                type="button"
+                onClick={() =>
+                  setShowImportForm(true)
+                }
+                className="order-2 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e1e8e3] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#a9c7b7] hover:bg-[#f5faf7] sm:w-auto sm:justify-self-end xl:order-2"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#eff7f2] text-[#006948]">
+                  <Icon
+                    name="upload"
+                    size={14}
+                  />
+                </span>
 
-      Kelola Kategori
+                Import Data CSV
+              </button>
 
-      <Icon
-        name="chevron-right"
-        size={13}
-        className="text-[#8a9790] transition group-hover:translate-x-0.5 group-hover:text-[#006948]"
-      />
-    </button>
+              {/* KELOLA KATEGORI */}
+              <button
+                type="button"
+                onClick={() =>
+                  router.push("/kategori")
+                }
+                className="order-3 group flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#dce8e1] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#8fbea6] hover:bg-[#f3faf6] hover:text-[#006948] sm:w-auto sm:justify-self-end xl:order-1"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#e8f7ef] text-[#006948] transition group-hover:bg-[#d8f1e4]">
+                  <Icon
+                    name="settings"
+                    size={14}
+                  />
+                </span>
 
-  </div>
-</section>
+                Kelola Kategori
+
+                <Icon
+                  name="chevron-right"
+                  size={13}
+                  className="text-[#8a9790] transition group-hover:translate-x-0.5 group-hover:text-[#006948]"
+                />
+              </button>
+
+            </div>
+          </section>
 
           {/* SUMMARY */}
           <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -3042,6 +3235,347 @@ export default function Produk() {
           background: #9eafa5;
         }
       `}</style>
+
+      {/* MODAL STOK OPNAME */}
+        {showStockOpname && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3 sm:p-6">
+            <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-[#101a16]">
+              <div className="flex items-start justify-between border-b border-[#e3eae5] p-5 dark:border-[#26382f]">
+                <div>
+                  <h2 className="text-base font-extrabold text-[#0b1c30] dark:text-[#e7f1ec]">
+                    Stok Opname
+                  </h2>
+                  <p className="mt-1 text-xs text-[#718078] dark:text-[#9eb2a7]">
+                    Cocokkan stok sistem dengan jumlah fisik di toko.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={savingStockOpname}
+                  onClick={() => setShowStockOpname(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-bold text-[#718078] hover:bg-[#eff4ff] disabled:opacity-50"
+                >
+                  Tutup
+                </button>
+              </div>
+
+              <div className="overflow-y-auto p-4 sm:p-5">
+                <label className="mb-4 block">
+                  <span className="mb-1.5 block text-xs font-bold text-[#3d4a42] dark:text-[#c7d7ce]">
+                    Catatan opname (opsional)
+                  </span>
+                  <input
+                    value={stockOpnameNote}
+                    onChange={(e) => setStockOpnameNote(e.target.value)}
+                    maxLength={500}
+                    placeholder="Contoh: Pemeriksaan stok akhir bulan"
+                    className="h-10 w-full rounded-lg border border-[#dfe7e3] bg-white px-3 text-sm outline-none focus:border-[#006948] dark:border-[#30463b] dark:bg-[#17231e] dark:text-white"
+                  />
+                </label>
+
+                <div className="mb-3 flex items-center justify-between text-xs text-[#718078] dark:text-[#9eb2a7]">
+                  <span>{stockOpnameItems.length} produk diperiksa</span>
+                  <span>Selisih = fisik − sistem</span>
+                </div>
+
+                <div className="overflow-x-auto rounded-lg border border-[#e3eae5] dark:border-[#26382f]">
+                  <table className="w-full min-w-[520px] text-left text-xs">
+                    <thead className="bg-[#f5f8f6] dark:bg-[#17231e]">
+                      <tr>
+                        <th className="px-3 py-3">Produk</th>
+                        <th className="px-3 py-3 text-center">Stok Sistem</th>
+                        <th className="px-3 py-3 text-center">Stok Fisik</th>
+                        <th className="px-3 py-3 text-center">Selisih</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {stockOpnameItems.map((item, index) => {
+                        const physical = Number(item.stock_physical);
+                        const valid =
+                          item.stock_physical.trim() !== "" &&
+                          Number.isSafeInteger(physical) &&
+                          physical >= 0;
+                        const difference = valid
+                          ? physical - item.stock_system
+                          : null;
+
+                        return (
+                          <tr
+                            key={item.product_id}
+                            className="border-t border-[#edf1ef] dark:border-[#26382f]"
+                          >
+                            <td className="max-w-[180px] px-3 py-3 font-bold text-[#26382f] dark:text-[#e7f1ec]">
+                              {item.nama}
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              {item.stock_system}
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={item.stock_physical}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setStockOpnameItems((prev) =>
+                                    prev.map((current, i) =>
+                                      i === index
+                                        ? { ...current, stock_physical: value }
+                                        : current
+                                    )
+                                  );
+                                }}
+                                className="h-9 w-24 rounded-md border border-[#dfe7e3] px-2 text-center outline-none focus:border-[#006948] dark:border-[#30463b] dark:bg-[#17231e] dark:text-white"
+                              />
+                            </td>
+                            <td
+                              className={`px-3 py-3 text-center font-extrabold ${
+                                difference === null
+                                  ? "text-[#718078]"
+                                  : difference < 0
+                                    ? "text-red-600"
+                                    : difference > 0
+                                      ? "text-[#006948]"
+                                      : "text-[#718078]"
+                              }`}
+                            >
+                              {difference === null
+                                ? "—"
+                                : difference > 0
+                                  ? `+${difference}`
+                                  : difference}
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {stockOpnameItems.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="px-3 py-10 text-center text-[#718078]"
+                          >
+                            Tidak ada produk aktif untuk diperiksa.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="mt-3 text-[11px] leading-relaxed text-[#718078] dark:text-[#9eb2a7]">
+                  Periksa jumlah fisik setiap produk sebelum menyimpan. Saat disimpan,
+                  stok sistem akan disesuaikan dengan stok fisik yang kamu masukkan.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 border-t border-[#e3eae5] p-4 dark:border-[#26382f]">
+                <button
+                  type="button"
+                  disabled={savingStockOpname}
+                  onClick={() => setShowStockOpname(false)}
+                  className="rounded-lg border border-[#dfe7e3] px-4 py-2.5 text-xs font-bold text-[#3d4a42] disabled:opacity-50"
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="button"
+                  disabled={savingStockOpname || stockOpnameItems.length === 0}
+                  onClick={saveStockOpname}
+                  className="rounded-lg bg-[#006948] px-4 py-2.5 text-xs font-extrabold text-white hover:bg-[#00583d] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {savingStockOpname ? "Menyimpan..." : "Simpan Stok Opname"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL RIWAYAT STOK OPNAME */}
+        {showStockOpnameHistory && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-3 sm:p-6">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="stock-opname-history-title"
+              className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-[#101a16]"
+            >
+              {/* HEADER */}
+              <header className="flex items-start justify-between gap-3 border-b border-[#e3eae5] p-4 sm:p-5 dark:border-[#26382f]">
+                <div>
+                  <h2
+                    id="stock-opname-history-title"
+                    className="text-base font-extrabold text-[#0b1c30] dark:text-[#e7f1ec]"
+                  >
+                    Riwayat Stok Opname
+                  </h2>
+                  <p className="mt-1 text-xs text-[#718078] dark:text-[#9eb2a7]">
+                    Riwayat pemeriksaan dan penyesuaian stok produk.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowStockOpnameHistory(false)}
+                  className="rounded-lg border border-[#dfe7e3] px-3 py-2 text-sm font-bold text-[#59675f] hover:bg-[#f3f8f5] dark:border-[#30463b] dark:text-[#c7d7ce]"
+                >
+                  Tutup
+                </button>
+              </header>
+
+              {/* ISI RIWAYAT */}
+              <div className="overflow-y-auto p-4 sm:p-5">
+                {loadingStockOpnameHistory ? (
+                  <p className="py-12 text-center text-sm text-[#718078]">
+                    Memuat riwayat stok opname...
+                  </p>
+                ) : stockOpnameHistory.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[#dfe7e3] px-4 py-12 text-center dark:border-[#30463b]">
+                    <Icon name="clipboard-check" size={28} />
+                    <p className="mt-3 text-sm font-bold text-[#3d4a42] dark:text-[#e7f1ec]">
+                      Belum ada riwayat stok opname
+                    </p>
+                    <p className="mt-1 text-xs text-[#718078] dark:text-[#9eb2a7]">
+                      Riwayat akan muncul setelah stok opname berhasil disimpan.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {stockOpnameHistory.map((opname) => (
+                      <details
+                        key={opname.id}
+                        className="overflow-hidden rounded-xl border border-[#e3eae5] dark:border-[#26382f]"
+                      >
+                        <summary className="cursor-pointer list-none p-4 transition hover:bg-[#f5f8f6] dark:hover:bg-[#17231e]">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-sm font-extrabold text-[#26382f] dark:text-[#e7f1ec]">
+                                Opname #{opname.id}
+                              </p>
+                              <p className="mt-1 text-xs text-[#718078] dark:text-[#9eb2a7]">
+                                {opname.created_at
+                                  ? new Date(opname.created_at).toLocaleString("id-ID")
+                                  : "-"}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 text-[11px]">
+                              <span className="rounded-lg bg-[#eff7f2] px-3 py-2 font-bold text-[#006948]">
+                                {opname.total_items} produk diperiksa
+                              </span>
+                              <span className="rounded-lg bg-[#fff4e5] px-3 py-2 font-bold text-[#9a5b00]">
+                                {opname.total_adjustments} penyesuaian
+                              </span>
+                            </div>
+                          </div>
+
+                          {opname.note && (
+                            <p className="mt-3 text-xs text-[#718078] dark:text-[#9eb2a7]">
+                              Catatan: {opname.note}
+                            </p>
+                          )}
+
+                          <p className="mt-2 text-[10px] font-bold text-[#006948]">
+                            Klik untuk melihat rincian produk
+                          </p>
+                        </summary>
+
+                        {/* RINCIAN PRODUK */}
+                        <div className="border-t border-[#e3eae5] p-3 dark:border-[#26382f]">
+                          <div className="overflow-x-auto rounded-lg border border-[#e3eae5] dark:border-[#26382f]">
+                            <table className="w-full min-w-[540px] text-left text-xs">
+                              <thead className="bg-[#f5f8f6] dark:bg-[#17231e]">
+                                <tr>
+                                  <th className="px-3 py-3">Produk</th>
+                                  <th className="px-3 py-3 text-center">
+                                    Stok Sistem
+                                  </th>
+                                  <th className="px-3 py-3 text-center">
+                                    Stok Fisik
+                                  </th>
+                                  <th className="px-3 py-3 text-center">
+                                    Selisih
+                                  </th>
+                                </tr>
+                              </thead>
+
+                              <tbody>
+                                {(opname.details || []).map((detail, index) => (
+                                  <tr
+                                    key={`${opname.id}-${detail.product_id}-${index}`}
+                                    className="border-t border-[#edf1ef] dark:border-[#26382f]"
+                                  >
+                                    <td className="px-3 py-3 font-bold text-[#26382f] dark:text-[#e7f1ec]">
+                                      {detail.product_name}
+                                    </td>
+
+                                    <td className="px-3 py-3 text-center">
+                                      {detail.stock_system}
+                                    </td>
+
+                                    <td className="px-3 py-3 text-center">
+                                      {detail.stock_physical}
+                                    </td>
+
+                                    <td
+                                      className={`px-3 py-3 text-center font-extrabold ${
+                                        detail.difference < 0
+                                          ? "text-red-600"
+                                          : detail.difference > 0
+                                            ? "text-[#006948]"
+                                            : "text-[#718078]"
+                                      }`}
+                                    >
+                                      {detail.difference > 0
+                                        ? `+${detail.difference}`
+                                        : detail.difference}
+                                    </td>
+                                  </tr>
+                                ))}
+
+                                {(!opname.details ||
+                                  opname.details.length === 0) && (
+                                  <tr>
+                                    <td
+                                      colSpan={4}
+                                      className="px-3 py-8 text-center text-[#718078]"
+                                    >
+                                      Rincian opname belum tersedia dari server.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* FOOTER */}
+              <footer className="flex items-center justify-between gap-3 border-t border-[#e3eae5] p-4 dark:border-[#26382f]">
+                <span className="text-xs text-[#718078] dark:text-[#9eb2a7]">
+                  {stockOpnameHistory.length} sesi opname
+                </span>
+
+                <button
+                  type="button"
+                  disabled={loadingStockOpnameHistory}
+                  onClick={() => void loadStockOpnameHistory()}
+                  className="rounded-lg border border-[#cfe5d8] px-3 py-2 text-xs font-bold text-[#006948] hover:bg-[#eff8f2] disabled:opacity-50"
+                >
+                  Muat Ulang
+                </button>
+              </footer>
+            </section>
+          </div>
+        )}
 
         {/* MODAL RIWAYAT STOK */}
         {showStockHistory && (
