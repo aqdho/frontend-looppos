@@ -591,23 +591,7 @@ export default function KategoriPage() {
         <header className="flex flex-col gap-4 pb-6 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col">
             <div className="mb-1 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  window.history.back();
-                }}
-                className="group -ml-2 inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[#3d4a42] transition-colors hover:bg-[#eff4ff] hover:text-[#006948] dark:text-[#b8c9c0] dark:hover:bg-[#17231e] dark:hover:text-[#85f8c4]"
-                title="Kembali ke Manajemen Produk"
-              >
-                <span className="transition-transform group-hover:-translate-x-0.5">
-                  <Icon name="arrow_back" size={20} />
-                </span>
-
-                <span className="text-xs font-semibold sm:text-sm">
-                  Kembali ke Produk
-                </span>
-              </button>
-
+              
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#bccac0] dark:bg-[#52675d]" />
 
               <span className="text-[11px] font-bold uppercase tracking-widest text-[#006948] dark:text-[#85f8c4]">
@@ -617,7 +601,7 @@ export default function KategoriPage() {
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#bccac0] dark:bg-[#52675d]" />
 
               <span className="text-[11px] font-medium text-[#3d4a42] dark:text-[#9eb2a7]">
-                KasirKilat POS
+                LoopPOS
               </span>
             </div>
 

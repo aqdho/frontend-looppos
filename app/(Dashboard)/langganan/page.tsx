@@ -142,12 +142,15 @@ export default function LanggananPage() {
 
       const plansData = await plansResponse.json();
 
-      setPlans(Array.isArray(plansData.plans) ? plansData.plans : []);
-      setTrialDays(
-        Number(plansData.trial?.duration_days) > 0
-          ? Number(plansData.trial.duration_days)
-          : 14
+      
+      setPlans(
+        Array.isArray(plansData.plans)
+          ? plansData.plans.filter(
+              (plan: Plan) => plan.id.toLowerCase() !== "free"
+            )
+          : []
       );
+
 
       if (subscriptionResponse.ok) {
         const data = await subscriptionResponse.json();
@@ -739,7 +742,7 @@ export default function LanggananPage() {
                 onClick={() => setPaymentPlan(null)}
                 className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-700"
               >
-                <IconCheck size={18} />
+                
                 Mengerti
               </button>
             </div>

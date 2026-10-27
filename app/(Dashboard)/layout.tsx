@@ -28,6 +28,7 @@ import {
   IconClipboardCheck,
   IconHistory,
   IconClipboardList,
+  IconUsers,
 } from "@tabler/icons-react";
 
 type Notifikasi = {
@@ -62,13 +63,20 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
 
-  const [produkMenuOpen, setProdukMenuOpen] = useState(
+  const isProdukPath =
     pathname.startsWith("/produk") ||
-      pathname.startsWith("/kategori") ||
-      pathname.startsWith("/stock-opname") ||
-      pathname.startsWith("/riwayat-stok") ||
-      pathname.startsWith("/riwayat-opname")
-  );
+    pathname.startsWith("/kategori") ||
+    pathname.startsWith("/stock-opname") ||
+    pathname.startsWith("/riwayat-stok") ||
+    pathname.startsWith("/riwayat-opname");
+
+  const isOperasionalPath =
+    pathname.startsWith("/kasir") ||
+    pathname.startsWith("/shift");
+
+  const [produkMenuOpen, setProdukMenuOpen] = useState(isProdukPath);
+  const [operasionalMenuOpen, setOperasionalMenuOpen] =
+    useState(isOperasionalPath);
 
   const [opened, setOpened] = useState(false);
   const [role, setRole] = useState<string | null>(null);
@@ -79,18 +87,16 @@ export default function DashboardLayout({
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Membuka submenu Produk saat berpindah ke halaman terkait.
+  // Membuka submenu ketika berpindah ke halaman terkait.
   useEffect(() => {
-    if (
-      pathname.startsWith("/produk") ||
-      pathname.startsWith("/kategori") ||
-      pathname.startsWith("/stock-opname") ||
-      pathname.startsWith("/riwayat-stok") ||
-      pathname.startsWith("/riwayat-opname")
-    ) {
+    if (isProdukPath) {
       setProdukMenuOpen(true);
     }
-  }, [pathname]);
+
+    if (isOperasionalPath) {
+      setOperasionalMenuOpen(true);
+    }
+  }, [pathname, isProdukPath, isOperasionalPath]);
 
   // Mengambil kunci notifikasi sesuai pengguna login.
   const getReadKey = (token: string) => {
@@ -288,60 +294,77 @@ export default function DashboardLayout({
   };
 
   // MENU OWNER.
-  const ownerMenu: MenuItem[] = [
-    {
-      href: "/dashboard",
-      label: "Dashboard",
-      icon: IconLayoutDashboard,
-    },
-    {
-      href: "/transaksi",
-      label: "Transaksi",
-      icon: IconCash,
-    },
-    {
-      href: "/produk",
-      label: "Produk",
-      icon: IconPackage,
-      submenu: [
-        {
-          href: "/produk",
-          label: "Daftar Produk",
-          icon: IconPackage,
-        },
-        {
-          href: "/kategori",
-          label: "Kategori",
-          icon: IconTag,
-        },
-        {
-          href: "/produk?modal=stock-opname",
-          label: "Stock Opname",
-          icon: IconClipboardCheck,
-        },
-        {
-          href: "/produk?modal=stock-history",
-          label: "Riwayat Pergerakan Stok",
-          icon: IconHistory,
-        },
-        {
-          href: "/produk?modal=stock-opname-history",
-          label: "Riwayat Opname",
-          icon: IconClipboardList,
-        },
-      ],
-    },
-    {
-      href: "/laporan",
-      label: "Laporan",
-      icon: IconReportAnalytics,
-    },
-    {
-      href: "/setting",
-      label: "Pengaturan",
-      icon: IconSettings,
-    },
-  ];
+const ownerMenu: MenuItem[] = [
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: IconLayoutDashboard,
+  },
+  {
+    href: "/transaksi",
+    label: "Transaksi",
+    icon: IconCash,
+  },
+  {
+    href: "/produk",
+    label: "Produk",
+    icon: IconPackage,
+    submenu: [
+      {
+        href: "/produk",
+        label: "Daftar Produk",
+        icon: IconPackage,
+      },
+      {
+        href: "/kategori",
+        label: "Kategori",
+        icon: IconTag,
+      },
+      {
+        href: "/stock-opname",
+        label: "Stock Opname",
+        icon: IconClipboardCheck,
+      },
+      {
+        href: "/riwayat-stok",
+        label: "Riwayat Pergerakan Stok",
+        icon: IconHistory,
+      },
+      {
+        href: "/riwayat-opname",
+        label: "Riwayat Opname",
+        icon: IconClipboardList,
+      },
+    ],
+  },
+  {
+    href: "/operasional",
+    label: "Operasional",
+    icon: IconUsers,
+    submenu: [
+      {
+        href: "/kasir",
+        label: "Kasir",
+        icon: IconUsers,
+      },
+      {
+        href: "/shift",
+        label: "Shift",
+        icon: IconClock,
+      },
+    ],
+  },
+  {
+    href: "/laporan",
+    label: "Laporan",
+    icon: IconReportAnalytics,
+  },
+  {
+    href: "/setting",
+    label: "Pengaturan",
+    icon: IconSettings,
+  },
+];
 
   // MENU KASIR TETAP TERPISAH.
   const kasirMenu: MenuItem[] = [
@@ -446,21 +469,30 @@ export default function DashboardLayout({
                 const Icon = item.icon;
 
                 if (item.submenu) {
-                  const active =
-                    pathname.startsWith("/produk") ||
-                    pathname.startsWith("/kategori") ||
-                    pathname.startsWith("/stock-opname") ||
-                    pathname.startsWith("/riwayat-stok") ||
-                    pathname.startsWith("/riwayat-opname");
+                  const isProdukMenu = item.href === "/produk";
+
+                  const active = isProdukMenu
+                    ? isProdukPath
+                    : isOperasionalPath;
+
+                  const submenuOpen = isProdukMenu
+                    ? produkMenuOpen
+                    : operasionalMenuOpen;
+
+                  const toggleSubmenu = () => {
+                    if (isProdukMenu) {
+                      setProdukMenuOpen((prev) => !prev);
+                    } else {
+                      setOperasionalMenuOpen((prev) => !prev);
+                    }
+                  };
 
                   return (
                     <div key={item.href}>
                       <button
                         type="button"
-                        onClick={() =>
-                          setProdukMenuOpen((prev) => !prev)
-                        }
-                        aria-expanded={produkMenuOpen}
+                        onClick={toggleSubmenu}
+                        aria-expanded={submenuOpen}
                         className={`
                           flex w-full items-center gap-2
                           rounded-lg px-2 py-2 transition-all
@@ -481,24 +513,18 @@ export default function DashboardLayout({
                         <IconChevronDown
                           size={17}
                           className={`transition-transform ${
-                            produkMenuOpen ? "rotate-180" : ""
+                            submenuOpen ? "rotate-180" : ""
                           }`}
                         />
                       </button>
 
-                      {produkMenuOpen && (
+                      {submenuOpen && (
                         <div className="ml-3 mt-1 flex flex-col gap-1 border-l border-[#dce5df] pl-3 dark:border-[#293b32]">
                           {item.submenu.map((subitem) => {
                             const SubIcon = subitem.icon;
-                            const isModalLink =
-                              subitem.href.includes("?modal=");
-
-                            const subActive = isModalLink
-                              ? false
-                              : pathname === subitem.href ||
-                                pathname.startsWith(
-                                  subitem.href + "/"
-                                );
+                            const subActive =
+                              pathname === subitem.href ||
+                              pathname.startsWith(subitem.href + "/");
 
                             return (
                               <Link

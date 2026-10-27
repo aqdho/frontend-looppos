@@ -1044,7 +1044,7 @@ export default function SettingPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f8f9ff] px-6 py-8 text-[#0b1c30] dark:bg-[#0b1411] dark:text-[#edf7f1]">
+      <main className="min-h-screen bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] sm:px-5 md:px-6 lg:px-8 dark:bg-[#0b1411] dark:text-[#edf7f1]">
         <div className="flex min-h-[50vh] items-center justify-center">
           <div className="flex items-center gap-3 text-sm font-semibold text-[#3d4a42] dark:text-[#9eb2a7]">
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#006948] border-t-transparent" />
@@ -1056,7 +1056,7 @@ export default function SettingPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] transition-colors sm:px-6 lg:px-8 dark:bg-[#0b1411] dark:text-[#edf7f1]">
+    <main className="relative min-h-screen w-full bg-[#f8f9ff] px-4 py-6 text-[#0b1c30] antialiased transition-colors sm:px-5 md:px-6 lg:px-8 dark:bg-[#0b1411] dark:text-[#edf7f1]">
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
         @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap");
@@ -1094,7 +1094,7 @@ export default function SettingPage() {
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col">
+      <div className="flex w-full flex-col">
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1 text-[12px] font-semibold leading-4 text-[#3d4a42] dark:text-[#9eb2a7]">

@@ -1392,49 +1392,13 @@ const saveStockOpname = async () => {
             {/* ACTION BUTTONS */}
             <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:w-auto xl:flex-row xl:flex-wrap xl:items-center xl:justify-end">
 
-              {/* RIWAYAT STOK */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowStockHistory(true);
-                  void loadStockMovements();
-                }}
-                className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#cfe5d8] bg-[#eff8f2] px-3.5 text-[11px] font-extrabold text-[#006948] transition hover:bg-[#e2f3e9] sm:w-auto sm:justify-self-end"
-              >
-                <Icon name="clock" size={15}/>
-                Riwayat Pergerakan Stok
-              </button>
-
-              {/* STOK OPNAME */}
-              <button
-                type="button"
-                onClick={openStockOpname}
-                className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#a9c7b7] bg-[#eff7f2] px-3.5 text-[11px] font-extrabold text-[#006948] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:bg-[#e1f2e8] sm:w-auto sm:justify-self-end"
-              >
-                <Icon name="clipboard-check" size={15} />
-                Stok Opname
-              </button>
-
-              {/* RIWAYAT STOK OPNAME */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowStockOpnameHistory(true);
-                  void loadStockOpnameHistory();
-                }}
-                className="order-0 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#cfe5d8] bg-[#eff8f2] px-3.5 text-[11px] font-extrabold text-[#006948] transition hover:bg-[#e2f3e9] sm:w-auto sm:justify-self-end"
-              >
-                <Icon name="history" size={15} />
-                Riwayat Opname
-              </button>
-
               {/* TAMBAH PRODUK */}
               <button
                 type="button"
                 onClick={() =>
                   setShowAddForm(true)
                 }
-                className="order-1 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#006948] px-4 text-[11px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,105,72,0.22)] transition hover:bg-[#00583d] active:scale-[0.98] sm:col-span-2 sm:justify-self-end sm:w-auto xl:order-3 xl:col-span-1"
+                className="order-2 flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#006948] px-4 text-[11px] font-extrabold text-white shadow-[0_5px_14px_rgba(0,105,72,0.22)] transition hover:bg-[#00583d] active:scale-[0.98] sm:col-span-2 sm:justify-self-end sm:w-auto xl:order-2 xl:col-span-1"
               >
                 <PlusIcon />
 
@@ -1447,7 +1411,7 @@ const saveStockOpname = async () => {
                 onClick={() =>
                   setShowImportForm(true)
                 }
-                className="order-2 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e1e8e3] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#a9c7b7] hover:bg-[#f5faf7] sm:w-auto sm:justify-self-end xl:order-2"
+                className="order-1 flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#e1e8e3] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#a9c7b7] hover:bg-[#f5faf7] sm:w-auto sm:justify-self-end xl:order-1"
               >
                 <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#eff7f2] text-[#006948]">
                   <Icon
@@ -1459,31 +1423,7 @@ const saveStockOpname = async () => {
                 Import Data CSV
               </button>
 
-              {/* KELOLA KATEGORI */}
-              <button
-                type="button"
-                onClick={() =>
-                  router.push("/kategori")
-                }
-                className="order-3 group flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#dce8e1] bg-white px-3.5 text-[11px] font-extrabold text-[#3d4a42] shadow-[0_2px_8px_rgba(11,28,48,0.04)] transition hover:border-[#8fbea6] hover:bg-[#f3faf6] hover:text-[#006948] sm:w-auto sm:justify-self-end xl:order-1"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#e8f7ef] text-[#006948] transition group-hover:bg-[#d8f1e4]">
-                  <Icon
-                    name="settings"
-                    size={14}
-                  />
-                </span>
-
-                Kelola Kategori
-
-                <Icon
-                  name="chevron-right"
-                  size={13}
-                  className="text-[#8a9790] transition group-hover:translate-x-0.5 group-hover:text-[#006948]"
-                />
-              </button>
-
-            </div>
+              </div>
           </section>
 
           {/* SUMMARY */}
@@ -1685,17 +1625,6 @@ const saveStockOpname = async () => {
                 );
               }
             )}
-
-            <button
-              type="button"
-              onClick={() =>
-                router.push("/kategori")
-              }
-              className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#a9c7b7] bg-[#f5faf7] px-3.5 text-[9px] font-extrabold text-[#006948] transition hover:border-[#006948] hover:bg-[#eaf6ef]"
-            >
-              <PlusIcon />
-              Kelola
-            </button>
           </section>
 
           {/* MAIN CONTENT */}
