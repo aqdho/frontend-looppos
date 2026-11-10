@@ -63,6 +63,20 @@ function formatDateShort(value: string) {
   });
 }
 
+function formatTime(value: string) {
+    if (!value) return "-";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+}
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat("id-ID").format(value);
 }
@@ -907,9 +921,16 @@ export default function RiwayatOpnamePage() {
 
                               <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <h3 className="text-sm font-extrabold text-slate-900">
-                                    Opname #{opname.id}
-                                  </h3>
+
+                                <div>
+                                <h3 className="text-sm font-extrabold text-slate-900">
+                                    Stok Opname · {formatDateShort(opname.created_at)}
+                                </h3>
+                                <p className="mt-1 text-[11px] font-medium text-slate-500">
+                                    {formatTime(opname.created_at)} WIB · {formatNumber(Number(opname.total_items || 0))} produk diperiksa
+                                </p>
+                                </div>
+
 
                                   <span
                                     className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-extrabold ${

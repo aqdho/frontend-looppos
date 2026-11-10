@@ -126,6 +126,9 @@ function StrukContent() {
     const [nomorPelanggan, setNomorPelanggan] = useState("");
     const [loading, setLoading] = useState(true);
     const [loadingPrint, setLoadingPrint] = useState(false);
+    const [jenisStruk, setJenisStruk] = useState<
+        "users" | "table" | "kitchen"
+    >("users");
     const [loadingWhatsApp, setLoadingWhatsApp] = useState(false);
     const [error, setError] = useState("");
 
@@ -293,7 +296,7 @@ function StrukContent() {
             }
 
             const response = await fetch(
-                `${API_URL}/whatsapp/struk-gambar/${transaksi.id}`,
+                `${API_URL}/whatsapp/struk-gambar/${transaksi.id}?jenis_struk=${jenisStruk}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
@@ -361,6 +364,7 @@ function StrukContent() {
                 },
                 body: JSON.stringify({
                     transaksi_id: transaksi.id,
+                    jenis_struk: jenisStruk,
                     printer: printerYangDipakai.printer,
                     device_id: printerYangDipakai.device_id,
                 }),
@@ -571,6 +575,19 @@ function StrukContent() {
                                         )}
                                 </div>
 
+                                <div className="border-b border-dashed border-slate-300 pb-3 text-center">
+                                    <p className="font-mono text-sm font-black uppercase tracking-wider text-slate-900">
+                                        {jenisStruk === "kitchen"
+                                            ? "TIKET DAPUR"
+                                            : jenisStruk === "table"
+                                            ? "TAGIHAN DINE-IN"
+                                            : "STRUK PEMBAYARAN"}
+                                    </p>
+                                    <p className="mt-1 font-mono text-[10px] text-slate-500">
+                                        No. Transaksi: #{transaksi.id}
+                                    </p>
+                                </div>
+
                                 {/* TANGGAL DAN KASIR */}
                                 <div className="flex items-start justify-between gap-3 pb-1 font-mono text-[10px] leading-relaxed text-slate-500">
                                     <span className="min-w-0">
@@ -595,14 +612,24 @@ function StrukContent() {
                                                     <p className="break-words font-semibold uppercase text-slate-900">
                                                         {item.nama}
                                                     </p>
-                                                    <p className="mt-0.5 text-[10px] text-slate-500">
-                                                        {item.qty} ×{" "}
-                                                        {formatRupiah(Number(item.harga))}
-                                                    </p>
+
+                                                    {jenisStruk === "kitchen" ? (
+                                                        <p className="mt-1 font-bold text-slate-900">
+                                                            JUMLAH: {item.qty}
+                                                        </p>
+                                                    ) : (
+                                                        <p className="mt-0.5 text-[10px] text-slate-500">
+                                                            {item.qty} ×{" "}
+                                                            {formatRupiah(Number(item.harga))}
+                                                        </p>
+                                                    )}
                                                 </div>
-                                                <span className="shrink-0 whitespace-nowrap text-right font-medium text-slate-900">
-                                                    {formatRupiah(Number(item.subtotal))}
-                                                </span>
+
+                                                {jenisStruk !== "kitchen" && (
+                                                    <span className="shrink-0 whitespace-nowrap text-right font-medium text-slate-900">
+                                                        {formatRupiah(Number(item.subtotal))}
+                                                    </span>
+                                                )}
                                             </div>
                                         ))}
 
@@ -614,29 +641,37 @@ function StrukContent() {
                                     </div>
                                 </div>
 
+
                                 {/* TOTAL DAN PEMBAYARAN */}
-                                <div className="space-y-2 font-mono text-[11px]">
-                                    <div className="flex items-baseline justify-between gap-3 pt-1 text-sm font-extrabold text-slate-950">
-                                        <span>TOTAL</span>
-                                        <span className="text-right text-base">
-                                            {formatRupiah(total)}
-                                        </span>
-                                    </div>
+                                {jenisStruk !== "kitchen" && (
+                                    <div className="space-y-2 font-mono text-[11px]">
+                                        <div className="flex items-baseline justify-between gap-3 pt-1 text-sm font-extrabold text-slate-950">
+                                            <span>TOTAL TAGIHAN</span>
+                                            <span className="text-right text-base">
+                                                {formatRupiah(total)}
+                                            </span>
+                                        </div>
 
-                                    <div className="flex items-center justify-between gap-3 pt-1 text-slate-600">
-                                        <span>Bayar ({metodePembayaran})</span>
-                                        <span className="text-right font-medium text-slate-900">
-                                            {formatRupiah(bayar)}
-                                        </span>
-                                    </div>
+                                        {jenisStruk === "users" && (
+                                            <>
+                                                <div className="flex items-center justify-between gap-3 pt-1 text-slate-600">
+                                                    <span>Bayar ({metodePembayaran})</span>
+                                                    <span className="text-right font-medium text-slate-900">
+                                                        {formatRupiah(bayar)}
+                                                    </span>
+                                                </div>
 
-                                    <div className="flex items-center justify-between gap-3 text-slate-600">
-                                        <span>Kembali</span>
-                                        <span className="text-right font-semibold text-emerald-700">
-                                            {formatRupiah(kembalian)}
-                                        </span>
+                                                <div className="flex items-center justify-between gap-3 text-slate-600">
+                                                    <span>Kembali</span>
+                                                    <span className="text-right font-semibold text-emerald-700">
+                                                        {formatRupiah(kembalian)}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
-                                </div>
+                                )}
+
 
                                 {/* FOOTER STRUK */}
                                 <div className="space-y-3 border-t border-dashed border-slate-300 pt-4 text-center">
@@ -880,6 +915,30 @@ function StrukContent() {
                                         ))}
                                     </select>
                                 )}
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="jenis-struk"
+                                    className="mb-2 block text-[11px] font-medium text-slate-300 sm:text-xs"
+                                >
+                                    Jenis Struk
+                                </label>
+
+                                <select
+                                    id="jenis-struk"
+                                    value={jenisStruk}
+                                    onChange={(e) =>
+                                        setJenisStruk(
+                                            e.target.value as "users" | "table" | "kitchen"
+                                        )
+                                    }
+                                    className="block h-11 w-full rounded-xl border border-white/10 bg-[#070a0f] px-3 text-xs text-white outline-none transition focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/10 sm:text-sm"
+                                >
+                                    <option value="users">Struk Pembayaran</option>
+                                    <option value="table">Tagihan Dine-in</option>
+                                    <option value="kitchen">Tiket Dapur</option>
+                                </select>
                             </div>
 
                             <button
